@@ -198,23 +198,6 @@ final class HttpConnection {
         // create the wrapper over connected socket
         unverifiedSocket = (SSLSocket) sslSocketFactory.createSocket(socket,
                 address.uriHost, address.uriPort, true /* autoClose */);
-        // tlsTolerant mimics Chrome's behavior
-        if (tlsTolerant) {
-            try {
-                // try advanced TLS options, falling back to SSLv3
-                Class<?> socketClass = unverifiedSocket.getClass();
-                socketClass.getMethod("setEnabledCompressionMethods", String[].class)
-                        .invoke(unverifiedSocket, new Object[] { new String[] { "ZLIB"}});
-                socketClass.getMethod("setUseSessionTickets", boolean.class)
-                        .invoke(unverifiedSocket, true);
-                socketClass.getMethod("setHostname", String.class)
-                        .invoke(unverifiedSocket, address.socketHost);
-            } catch (Exception e) {
-                unverifiedSocket.setEnabledProtocols(new String [] { "SSLv3" });
-            }
-        } else {
-            unverifiedSocket.setEnabledProtocols(new String [] { "SSLv3" });
-        }
         // force handshake, which can throw
         unverifiedSocket.startHandshake();
     }
